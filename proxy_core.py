@@ -1,7 +1,10 @@
 import select
 import socket
+import threading
 import time
 from _thread import *
+
+from statistic import Addres_statistc
 
 buffer_size = 8192
 connection_size = 200
@@ -20,6 +23,7 @@ class Server:
 
 
 	def sever_loop (self):
+		print("********** Proxy Server Start **********")
 		while True:
 			try:
 				conn, addr = self.servSock.accept()
@@ -66,6 +70,7 @@ def parser(data):
 def proxy (serv_conn,clien_addr):
 	temp = serv_conn.recv(buffer_size)
 	headers = parser(temp)
+	Addres_statistc.address_list_temp.append(headers["Host"])
 	clien = Client(headers["Host"], int(headers["Port"]))
 	if headers["Type"] == 'CONNECT' :
 		serv_conn.send(b'HTTP / 1.1 200 Connection established\nProxy-Agent: THE BB Proxy\n\n')
@@ -82,13 +87,10 @@ def proxy (serv_conn,clien_addr):
 				data = in_.recv(buffer_size)
 				if in_ is clien_conn:
 					out = serv_conn
-					way = 'clien -> serv'
 				else:
 					out = clien_conn
-					way = 'serv -> clien'
 				if data:
 					out.send(data)
-					print(way, data)
 					time_wait = 0
 		else:
 			time.sleep(1)
@@ -104,4 +106,7 @@ def proxy (serv_conn,clien_addr):
 
 if __name__ == '__main__':
 	server = Server('',9090)
+	stat = Addres_statistc
+	stat.init()
+	threading.Thread(target=stat.addres_statistic_loop, args=(), daemon=True).start()
 	server.sever_loop()
