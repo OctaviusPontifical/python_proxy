@@ -89,15 +89,17 @@ def proxy (serv_conn,clien_addr):
 					out = serv_conn
 				else:
 					out = clien_conn
-				if data:
+				if len(data)>0:
 					out.send(data)
 					time_wait = 0
+				else:
+					time.sleep(1)
+					time_wait += 1
 		else:
 			time.sleep(1)
 			time_wait +=1
 		if time_out_max ==time_wait:
 			break
-	print("Close connect")
 	clien_conn.close()
 	serv_conn.close()
 
