@@ -3,7 +3,7 @@ import time
 
 time_weit_statistic_analis =3600 # in sec
 
-class Addres_statistc:
+class Addres_statistics:
     address_list_temp =[]
     address_list = []
 

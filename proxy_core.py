@@ -3,8 +3,8 @@ import socket
 import threading
 import time
 from _thread import *
-
-from statistic import Addres_statistc
+from statistic import Addres_statistics
+from filter import Filter
 
 buffer_size = 8192
 connection_size = 200
@@ -70,14 +70,24 @@ def parser(data):
 def proxy (serv_conn,clien_addr):
 	temp = serv_conn.recv(buffer_size)
 	headers = parser(temp)
-	Addres_statistc.address_list_temp.append(headers["Host"])
-	clien = Client(headers["Host"], int(headers["Port"]))
-	if headers["Type"] == 'CONNECT' :
-		serv_conn.send(b'HTTP / 1.1 200 Connection established\nProxy-Agent: THE BB Proxy\n\n')
-	clien_conn = clien.clieSock
+	Addres_statistics.address_list_temp.append(headers["Host"])
+	connect = False
+	if Filter.filter(headers["Host"],headers["Port"]):
+		if headers["Type"] == 'CONNECT' :
+			clien = Client(headers["Host"], int(headers["Port"]))
+			clien_conn = clien.clieSock
+			serv_conn.send(b'HTTP / 1.1 200 Connection established\nProxy-Agent: THE BB Proxy\n\n')
+		else:
+			clien = Client(headers["Host"], int(headers["Port"]))
+			clien_conn = clien.clieSock
+			clien_conn.send(temp)
+		connect = True
+	else:
+		serv_conn.send(b'HTTP/1.1 403 Forbidden')
+
 
 	time_wait = 0
-	while True:
+	while connect:
 		recv, _, error = select.select([serv_conn, clien_conn], [], [serv_conn, clien_conn], 3)
 		if error:
 			print(error)
@@ -100,7 +110,9 @@ def proxy (serv_conn,clien_addr):
 			time_wait +=1
 		if time_out_max ==time_wait:
 			break
-	clien_conn.close()
+	print("Разрываю соединение ")
+	if connect :
+		clien_conn.close()
 	serv_conn.close()
 
 
@@ -108,7 +120,8 @@ def proxy (serv_conn,clien_addr):
 
 if __name__ == '__main__':
 	server = Server('',9090)
-	stat = Addres_statistc
+	stat = Addres_statistics
 	stat.init()
 	threading.Thread(target=stat.addres_statistic_loop, args=(), daemon=True).start()
+	Filter.init()
 	server.sever_loop()
