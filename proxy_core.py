@@ -70,9 +70,9 @@ def parser(data):
 def proxy (serv_conn,clien_addr):
 	temp = serv_conn.recv(buffer_size)
 	headers = parser(temp)
-	Addres_statistics.address_list_temp.append(headers["Host"])
 	connect = False
-	if Filter.filter(headers["Host"],headers["Port"]):
+	if Filter.filter(headers["Host"],headers["Port"],clien_addr):
+		Addres_statistics.address_list_temp.append(headers["Host"])
 		if headers["Type"] == 'CONNECT' :
 			clien = Client(headers["Host"], int(headers["Port"]))
 			clien_conn = clien.clieSock
@@ -94,7 +94,11 @@ def proxy (serv_conn,clien_addr):
 			break
 		if recv:
 			for in_ in recv:
-				data = in_.recv(buffer_size)
+				try:
+					data = in_.recv(buffer_size)
+				except ConnectionAbortedError :
+					print("Соеденение разорвано!!!")
+					break
 				if in_ is clien_conn:
 					out = serv_conn
 				else:
@@ -105,12 +109,13 @@ def proxy (serv_conn,clien_addr):
 				else:
 					time.sleep(1)
 					time_wait += 1
+					if time_out_max == time_wait:
+						break
 		else:
 			time.sleep(1)
 			time_wait +=1
 		if time_out_max ==time_wait:
 			break
-	print("Разрываю соединение ")
 	if connect :
 		clien_conn.close()
 	serv_conn.close()
