@@ -1,4 +1,4 @@
-import json
+
 
 black_list_path = "black.list"
 transparent_mode = False
@@ -10,7 +10,13 @@ class Filter:
     def init(self):
         try:
             file = open(black_list_path)
-            self.black_list = json.load(file)
+            for line in file:
+                site,domain,port,subdomain,source=line.rstrip('\n').split(":")
+                self.black_list[site]={}
+                self.black_list[site]["domain"]=domain
+                self.black_list[site]["port"]=port
+                self.black_list[site]["subdomain"]=subdomain
+                self.black_list[site]["source"]=source
             file.close()
         except FileNotFoundError:
             print("File mot found ")
@@ -19,23 +25,35 @@ class Filter:
         print("********** Init Filter **********")
 
     @classmethod
-    def filter(self,url,port,path = None):
-        if url in self.black_list  :
-            if self.black_list[url]['port'] =='all':
-                return False
+    def filter(self,url,port,source=None):
+        site = url.split(".")
+        if site[-2] in self.black_list  :
+            if self.black_list[site[-2]]['domain'] == '': None
+            elif self.black_list[site[-2]]['domain'] == 'all': return False
             else:
-                for list in self.black_list[url]['port']:
-                    if list == port:
+                if site[-1] in self.black_list[site[-2]]['domain'].split(","):
+                    return False
+
+            if self.black_list[site[-2]]['port'] =='': None
+            elif self.black_list[site[-2]]['port'] == 'all' : return False
+            else:
+                if port in self.black_list[site[-2]]['port'].split(","):
+                    return False
+            if len(site) >2:
+                if self.black_list[site[-2]]['subdomain'] =='': None
+                elif self.black_list[site[-2]]['subdomain'] == 'all' : return False
+                else:
+                    if site[-3] in self.black_list[site[-2]]['subdomain'].split(","):
                         return False
 
-               # if self.black_list[url]['path'] =='all':
-                #    return False
-                #else:
-                 #   for list in self.black_list[url]['path']:
-                  #      if list== path:
-                   #         return  False
-                    #    elif list == 'all':
-                     #       return False
+            if self.black_list[site[-2]]['source'] =='': None
+            elif self.black_list[site[-2]]['source'] == 'all' : return False
+            else:
+                if source in self.black_list[site[-2]]['source'].split(","):
+                    return False
+
+
             return True
         else:
             return True
+

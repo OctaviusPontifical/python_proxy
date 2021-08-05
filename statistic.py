@@ -1,7 +1,7 @@
 import threading
 import time
 
-time_weit_statistic_analis =3600 # in sec
+time_weit_statistic_analis =10 # in sec
 
 class Addres_statistics:
     address_list_temp =[]
