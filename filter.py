@@ -39,6 +39,7 @@ class Filter:
             else:
                 if port in self.black_list[site[-2]]['port'].split(","):
                     return False
+
             if len(site) >2:
                 if self.black_list[site[-2]]['subdomain'] =='': None
                 elif self.black_list[site[-2]]['subdomain'] == 'all' : return False
@@ -52,8 +53,19 @@ class Filter:
                 if source in self.black_list[site[-2]]['source'].split(","):
                     return False
 
+        elif url in self.black_list:
+            if self.black_list[url]['port'] =='': None
+            elif self.black_list[url]['port'] == 'all' : return False
+            else:
+                if port in self.black_list[url]['port'].split(","):
+                    return False
+
+            if self.black_list[url]['source'] =='': None
+            elif self.black_list[url]['source'] == 'all' : return False
+            else:
+                if source in self.black_list[url]['source'].split(","):
+                    return False
 
             return True
         else:
             return True
-
