@@ -3,13 +3,15 @@ import socket
 import threading
 import time
 from _thread import *
+import setting
 from statistic import Addres_statistics
 from filter import Filter
 
-buffer_size = 8192
-connection_size = 200
-wait_times_requests_on_server = 30 #в секундах
-time_out_max = 30
+
+BUFFER_SIZE = int(setting.get_param("BUFFER_SIZE"))
+CONNECTIONS = int(setting.get_param("CONNECTIONS"))
+SERVER_WAIT = int(setting.get_param("SERVER_WAIT"))
+TIMEOUT_MAX = int(setting.get_param("TIMEOUT_MAX"))
 
 
 class Server:
@@ -18,8 +20,8 @@ class Server:
 		self.servSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.servSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.servSock.bind((host, port))
-		self.servSock.listen(connection_size)
-		self.servSock.settimeout(wait_times_requests_on_server)
+		self.servSock.listen(CONNECTIONS)
+		self.servSock.settimeout(SERVER_WAIT)
 
 
 	def sever_loop (self):
@@ -68,7 +70,7 @@ def parser(data):
 
 
 def proxy (serv_conn,clien_addr):
-	temp = serv_conn.recv(buffer_size)
+	temp = serv_conn.recv(BUFFER_SIZE)
 	headers = parser(temp)
 	connect = False
 	if Filter.filter(headers["Host"],headers["Port"],clien_addr):
@@ -95,9 +97,8 @@ def proxy (serv_conn,clien_addr):
 		if recv:
 			for in_ in recv:
 				try:
-					data = in_.recv(buffer_size)
+					data = in_.recv(BUFFER_SIZE)
 				except ConnectionAbortedError :
-					print("Соеденение разорвано!!!")
 					break
 				if in_ is clien_conn:
 					out = serv_conn
@@ -109,12 +110,12 @@ def proxy (serv_conn,clien_addr):
 				else:
 					time.sleep(1)
 					time_wait += 1
-					if time_out_max == time_wait:
+					if TIMEOUT_MAX == time_wait:
 						break
 		else:
 			time.sleep(1)
 			time_wait +=1
-		if time_out_max ==time_wait:
+		if TIMEOUT_MAX ==time_wait:
 			break
 	if connect :
 		clien_conn.close()
