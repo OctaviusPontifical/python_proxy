@@ -2,4 +2,3 @@ address
 .idea/
 __pycache__/
 test.py
-black.list

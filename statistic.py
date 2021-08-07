@@ -3,6 +3,7 @@ import time
 import setting
 
 STATISTIC_WAIT =int(setting.get_param("STATISTIC_WAIT"))
+STATISTIC_PATH = (setting.get_param("STATISTIC_PATH"))
 
 class Addres_statistics:
     address_list_temp =[]
@@ -11,7 +12,7 @@ class Addres_statistics:
     @classmethod
     def init(self):
         try:
-            file = open('address')
+            file = open(STATISTIC_PATH)
             for line in file:
                 addr=  line.rstrip('\n')
                 self.address_list.append(addr)

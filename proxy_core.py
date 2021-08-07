@@ -7,7 +7,7 @@ import setting
 from statistic import Addres_statistics
 from filter import Filter
 
-
+SERVER_PORT = int(setting.get_param("SERVER_PORT"))
 BUFFER_SIZE = int(setting.get_param("BUFFER_SIZE"))
 CONNECTIONS = int(setting.get_param("CONNECTIONS"))
 SERVER_WAIT = int(setting.get_param("SERVER_WAIT"))
@@ -125,7 +125,7 @@ def proxy (serv_conn,clien_addr):
 
 
 if __name__ == '__main__':
-	server = Server('',9090)
+	server = Server('',SERVER_PORT)
 	stat = Addres_statistics
 	stat.init()
 	threading.Thread(target=stat.addres_statistic_loop, args=(), daemon=True).start()
