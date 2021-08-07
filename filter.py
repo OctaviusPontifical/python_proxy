@@ -1,6 +1,6 @@
+import setting
 
-
-black_list_path = "black.list"
+BLACK_LIST_PATH = setting.get_param("BLACK_LIST_PATH")
 transparent_mode = False
 
 class Filter:
@@ -9,7 +9,7 @@ class Filter:
     @classmethod
     def init(self):
         try:
-            file = open(black_list_path)
+            file = open(BLACK_LIST_PATH)
             for line in file:
                 site,domain,port,subdomain,source=line.rstrip('\n').split(":")
                 self.black_list[site]={}
@@ -52,6 +52,8 @@ class Filter:
             else:
                 if source in self.black_list[site[-2]]['source'].split(","):
                     return False
+
+            return True
 
         elif url in self.black_list:
             if self.black_list[url]['port'] =='': None
