@@ -130,4 +130,5 @@ if __name__ == '__main__':
 	stat.init()
 	threading.Thread(target=stat.addres_statistic_loop, args=(), daemon=True).start()
 	Filter.init()
+	threading.Thread(target=Filter.update_blacklist_loop, args=(), daemon=True).start()
 	server.sever_loop()
