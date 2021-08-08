@@ -27,7 +27,7 @@ class Addres_statistics:
     def addres_statistic_loop(self):
         while True:
             time.sleep(STATISTIC_WAIT)
-            file = open("address", 'a')
+            file = open(STATISTIC_PATH, 'a')
             temp_list = set(self.address_list_temp)
             self.address_list_temp = []
             for i in temp_list:

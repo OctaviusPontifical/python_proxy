@@ -1,6 +1,9 @@
+import time
+
 import setting
 
 BLACK_LIST_PATH = setting.get_param("BLACK_LIST_PATH")
+BLACK_LIST_WAIT = int(setting.get_param("BLACK_LIST_WAIT"))
 transparent_mode = False
 
 class Filter:
@@ -71,3 +74,24 @@ class Filter:
             return True
         else:
             return True
+
+    @classmethod
+    def update_blacklist_loop(self):
+        while True:
+            time.sleep(BLACK_LIST_WAIT)
+            temp = {}
+            try :
+                file = open(BLACK_LIST_PATH)
+                for line in file:
+                    site,domain,port,subdomain,source=line.rstrip('\n').split(":")
+                    temp[site]={}
+                    temp[site]["domain"]=domain
+                    temp[site]["port"]=port
+                    temp[site]["subdomain"]=subdomain
+                    temp[site]["source"]=source
+                file.close()
+                self.black_list = temp
+            except FileNotFoundError:
+                print("Black list mot found ")
+            except Exception as e:
+                print('Не предвиденная ошибка в классе Filter : ', e)
