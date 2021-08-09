@@ -100,6 +100,8 @@ def proxy (serv_conn,clien_addr):
 					data = in_.recv(BUFFER_SIZE)
 				except ConnectionAbortedError :
 					break
+				except ConnectionResetError:
+					break
 				if in_ is clien_conn:
 					out = serv_conn
 				else:
