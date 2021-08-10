@@ -49,41 +49,47 @@ class Client:
 
 
 def parser(data):
-	headers , body = data.split(b"\r\n\r\n") #!!!
-	params = headers.decode().split("\r\n")
-	output = {}
-	output["Body_Len"] = len(body)
-	output["Type"],_,_=params[0].split(" ")
-	for i in params[1:]:
-		key, value =  i.split(": ")
-		output[key] = value
 	try:
-		host , port = output["Host"].split(":")
-		output["Host"] = host
-		output["Port"] = port
-	except ValueError :
-		if 'https' in params[0]:
-			output["Port"] = 443
-		else:
-			output["Port"] = 80
-	return output
-
+		headers , body = data.split(b"\r\n\r\n") #!!!
+		params = headers.decode().split("\r\n")
+		output = {}
+		output["Body_Len"] = len(body)
+		output["Type"],_,_=params[0].split(" ")
+		for i in params[1:]:
+			key, value =  i.split(": ")
+			output[key] = value
+		try:
+			host , port = output["Host"].split(":")
+			output["Host"] = host
+			output["Port"] = port
+		except ValueError :
+			if 'https' in params[0]:
+				output["Port"] = 443
+			else:
+				output["Port"] = 80
+		return output
+	except Exception:
+		return False
 
 def proxy (serv_conn,clien_addr):
 	temp = serv_conn.recv(BUFFER_SIZE)
 	headers = parser(temp)
 	connect = False
-	if Filter.filter(headers["Host"],headers["Port"],clien_addr):
+	if headers and Filter.filter(headers["Host"],headers["Port"],clien_addr) :
 		Addres_statistics.address_list_temp.append(headers["Host"])
-		if headers["Type"] == 'CONNECT' :
-			clien = Client(headers["Host"], int(headers["Port"]))
-			clien_conn = clien.clieSock
-			serv_conn.send(b'HTTP / 1.1 200 Connection established\nProxy-Agent: THE BB Proxy\n\n')
-		else:
-			clien = Client(headers["Host"], int(headers["Port"]))
-			clien_conn = clien.clieSock
-			clien_conn.send(temp)
-		connect = True
+		try:
+			if headers["Type"] == 'CONNECT' :
+				clien = Client(headers["Host"], int(headers["Port"]))
+				clien_conn = clien.clieSock
+				serv_conn.send(b'HTTP / 1.1 200 Connection established\nProxy-Agent: THE BB Proxy\n\n')
+			else:
+				clien = Client(headers["Host"], int(headers["Port"]))
+				clien_conn = clien.clieSock
+				clien_conn.send(temp)
+			connect = True
+		except TimeoutError : None
+		except Exception as e :
+			print("Не предвиденная ошибка ",headers["Host"],headers["Port"],clien_addr,e)
 	else:
 		serv_conn.send(b'HTTP/1.1 403 Forbidden')
 
@@ -98,22 +104,22 @@ def proxy (serv_conn,clien_addr):
 			for in_ in recv:
 				try:
 					data = in_.recv(BUFFER_SIZE)
+					if in_ is clien_conn:
+						out = serv_conn
+					else:
+						out = clien_conn
+					if len(data)>0:
+						out.send(data)
+						time_wait = 0
+					else:
+						time.sleep(1)
+						time_wait += 1
+						if TIMEOUT_MAX == time_wait:
+							break
 				except ConnectionAbortedError :
 					break
 				except ConnectionResetError:
 					break
-				if in_ is clien_conn:
-					out = serv_conn
-				else:
-					out = clien_conn
-				if len(data)>0:
-					out.send(data)
-					time_wait = 0
-				else:
-					time.sleep(1)
-					time_wait += 1
-					if TIMEOUT_MAX == time_wait:
-						break
 		else:
 			time.sleep(1)
 			time_wait +=1
