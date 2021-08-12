@@ -120,6 +120,11 @@ def proxy (serv_conn,clien_addr):
 					break
 				except ConnectionResetError:
 					break
+				except BrokenPipeError:
+					break
+				except Exception as e:
+					print("Не предвиденная ошибка в блоке обмена : ",e)
+					break
 		else:
 			time.sleep(1)
 			time_wait +=1
