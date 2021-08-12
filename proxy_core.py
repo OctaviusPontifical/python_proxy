@@ -76,7 +76,7 @@ def proxy (serv_conn,clien_addr):
 	headers = parser(temp)
 	connect = False
 	if headers and Filter.filter(headers["Host"],headers["Port"],clien_addr) :
-		Addres_statistics.address_list_temp.append(headers["Host"])
+		Addres_statistics.address_list_temp.append(headers["Host"]+":"+str(headers["Port"]))
 		try:
 			if headers["Type"] == 'CONNECT' :
 				clien = Client(headers["Host"], int(headers["Port"]))
@@ -119,6 +119,11 @@ def proxy (serv_conn,clien_addr):
 				except ConnectionAbortedError :
 					break
 				except ConnectionResetError:
+					break
+				except BrokenPipeError:
+					break
+				except Exception as e:
+					print("Не предвиденная ошибка в блоке обмена : ",e)
 					break
 		else:
 			time.sleep(1)

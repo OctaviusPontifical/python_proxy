@@ -29,51 +29,58 @@ class Filter:
 
     @classmethod
     def filter(self,url,port,source=None):
-        site = url.split(".")
-        if site[-2] in self.black_list  :
-            if self.black_list[site[-2]]['domain'] == '': None
-            elif self.black_list[site[-2]]['domain'] == 'all': return False
-            else:
-                if site[-1] in self.black_list[site[-2]]['domain'].split(","):
-                    return False
-
-            if self.black_list[site[-2]]['port'] =='': None
-            elif self.black_list[site[-2]]['port'] == 'all' : return False
-            else:
-                if port in self.black_list[site[-2]]['port'].split(","):
-                    return False
-
-            if len(site) >2:
-                if self.black_list[site[-2]]['subdomain'] =='': None
-                elif self.black_list[site[-2]]['subdomain'] == 'all' : return False
+        try:
+            site = url.split(".")
+            if site[-2] in self.black_list  :
+                if self.black_list[site[-2]]['domain'] == '': None
+                elif self.black_list[site[-2]]['domain'] == 'all': return False
                 else:
-                    if site[-3] in self.black_list[site[-2]]['subdomain'].split(","):
+                    if site[-1] in self.black_list[site[-2]]['domain'].split(","):
                         return False
 
-            if self.black_list[site[-2]]['source'] =='': None
-            elif self.black_list[site[-2]]['source'] == 'all' : return False
+                if self.black_list[site[-2]]['port'] =='': None
+                elif self.black_list[site[-2]]['port'] == 'all' : return False
+                else:
+                    if port in self.black_list[site[-2]]['port'].split(","):
+                        return False
+
+                if len(site) >2:
+                    if self.black_list[site[-2]]['subdomain'] =='': None
+                    elif self.black_list[site[-2]]['subdomain'] == 'all' : return False
+                    else:
+                        if site[-3] in self.black_list[site[-2]]['subdomain'].split(","):
+                            return False
+
+                if self.black_list[site[-2]]['source'] =='': None
+                elif self.black_list[site[-2]]['source'] == 'all' : return False
+                else:
+                    if source in self.black_list[site[-2]]['source'].split(","):
+                        return False
+
+                return True
+
+            elif url in self.black_list:
+                if self.black_list[url]['port'] =='': None
+                elif self.black_list[url]['port'] == 'all' : return False
+                else:
+                    if port in self.black_list[url]['port'].split(","):
+                        return False
+
+                if self.black_list[url]['source'] =='': None
+                elif self.black_list[url]['source'] == 'all' : return False
+                else:
+                    if source in self.black_list[url]['source'].split(","):
+                        return False
+
+                return True
             else:
-                if source in self.black_list[site[-2]]['source'].split(","):
-                    return False
-
-            return True
-
-        elif url in self.black_list:
-            if self.black_list[url]['port'] =='': None
-            elif self.black_list[url]['port'] == 'all' : return False
-            else:
-                if port in self.black_list[url]['port'].split(","):
-                    return False
-
-            if self.black_list[url]['source'] =='': None
-            elif self.black_list[url]['source'] == 'all' : return False
-            else:
-                if source in self.black_list[url]['source'].split(","):
-                    return False
-
-            return True
-        else:
-            return True
+                return True
+        except IndexError :
+            print("Error, Site: ",url,":",port)
+            return False
+        except Exception as e :
+            print("Не предвиденная ошибка в Фильтре ", url,port,e)
+            return False
 
     @classmethod
     def update_blacklist_loop(self):
