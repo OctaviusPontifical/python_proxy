@@ -76,7 +76,7 @@ def proxy (serv_conn,clien_addr):
 	headers = parser(temp)
 	connect = False
 	if headers and Filter.filter(headers["Host"],headers["Port"],clien_addr) :
-		Addres_statistics.address_list_temp.append(headers["Host"]+":"+headers["Port"])
+		Addres_statistics.address_list_temp.append(headers["Host"]+":"+str(headers["Port"]))
 		try:
 			if headers["Type"] == 'CONNECT' :
 				clien = Client(headers["Host"], int(headers["Port"]))
