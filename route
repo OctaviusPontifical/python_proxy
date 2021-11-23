@@ -1,0 +1,4 @@
+path:ip\name:port:source for blocking
+:kremlin.ru:80:
+manager:google:443:
+secure:0.0.0.0:22:
